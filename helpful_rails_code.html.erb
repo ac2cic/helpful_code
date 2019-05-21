@@ -1,0 +1,193 @@
+There is no need to reinvent the wheel.
+
+  ~ helpful Rails code ~
+
+<!--__________________________________________________-->
+
+!!! localhost:3000/rails/info/routes !!!
+
+collection_select nil, :cohort_id, :id, Cohort.all, :id, :name
+
+after 'resources' => path: '/batches'
+root 'application#index'
+
+validates :attr1, :attr2, {presence: true, uniqueness: true}
+
+<!--_________________________ Index Template _________________________-->
+
+index => @model = Author.new
+
+<% @link_attr = 'name' %>
+<%= render 'layouts/index' %>
+
+<!-- original view file above, _form file below -->
+
+<h1>All <%= @model.class.to_s.pluralize %></h1>
+
+<h3>
+<% @model.class.all.each do |obj| %>
+  <%= link_to obj.send(@link_attr), send(@model.class.to_s.downcase+"_path", obj) %><br>
+<% end %>
+</h3>
+
+<%= link_to "Add new #{@model.class.to_s.downcase}", send("new_#{@model.class.to_s.downcase}_path") %><br>
+<%= link_to 'Home', '/' %>
+
+<!--_________________________ Show Template VERSION 2 _________________________
+*** shows ONLY the attributes you specify -->
+
+show => @model = @author
+
+<% @header_attr = 'name' %>
+<% @attr_array = [:attr1, :atrr2] %>
+<%= render 'layouts/show' %>
+
+<!-- original view file above, _form file below -->
+
+<h1><%= @model.send(@header_attr) %></h1>
+
+<h3>
+<% @attr_array.each do |attr| %>
+  <%= "#{attr} - #{@model.send(attr)}" %><br>
+<% end %>
+</h3><br>
+
+<%= link_to 'Update', send("edit_#{@model.class.to_s.downcase}_path")%><br>
+<%= link_to 'Delete', send(@model.class.to_s.downcase+"_path", @model), method: :delete %><br>
+<%= link_to 'Back',   send(@model.class.to_s.downcase.pluralize+"_path") %>
+
+<!--_________________________ Show Template VERSION 1 _________________________
+*** shows EVERY attribute -->
+
+<% @header_attr = 'name' %>
+<%= render 'layouts/show' %>
+
+<!-- original view file above, _form file below -->
+
+<!-- header here -->
+
+<h3>
+<% @model.attributes.each do |attr, value| %>
+  <%= "#{attr} - #{value}" %><br>
+<% end %>
+</h3><br>
+
+<!-- links here -->
+
+<!--_________________________ New / Edit Template VERSION 3 _________________________
+*** create and update specific attributes with specific input tags
+*** more complex input tags like collection_select will not work though -->
+new    => @model = Author.new
+create => @model = Author.new(strong_params)
+
+edit   => @model = @author
+
+<% @header_msg = 'MODEL Form' %>
+<% @button_msg = 'submit button' %>
+<% @attr_hash = {name: 'text_field', genre: 'text_field', bio: 'text_area'} %>
+<%= render 'layouts/form' %>
+
+<!-- original view file above, _form file below -->
+
+<h1><%= @header_msg %></h1>
+
+<ul>
+  <% @model.errors.full_messages.each do |error| %>
+    <li style="color: red;"><%= error %></li>
+  <% end %>
+</ul>
+
+<%= form_for(@model) do |f| %>
+  <% @attr_hash.each do |attr, method| %>
+    <%= attr %><br><%= f.send(method, :"#{attr}") %><br><br>
+  <% end %><br>
+
+  <%= f.submit @button_msg%>
+<% end %>
+
+<!--_________________________ New / Edit Template VERSION 2 _________________________
+*** text field input for every attribute, excluding id and timestamps -->
+
+<% @header_msg = 'MODEL form' %>
+<% @button_msg = 'submit button' %>
+<%= render 'layouts/form' %>
+
+<!-- original view file above, _form file below -->
+
+<!-- header and error display goes here -->
+
+<%= form_for(@model) do |f| %>
+  <% @model.attributes.keys.each do |attr| %>
+    <% if attr != 'id' && attr != 'created_at' && attr != 'updated_at' %>
+      <%= attr %> <%= f.text_field attr %><br>
+      <% end %>
+  <% end %><br>
+
+  <%= f.submit @button_msg%>
+<% end %>
+
+<!--_________________________ New / Edit Template VERSION 1 _________________________
+*** Manually type inputs into form. Can't be used by multiple models at once. -->
+
+<% @header_msg = 'MODEL form' %>
+<% @button_msg = 'submit button' %>
+<%= render 'form' %>
+
+<!-- original view file above, _form file below -->
+
+<!-- header and error display goes here -->
+
+<%= form_for(@MODEL) do |f| %> <!-- method/verb is interpreted by Rails magic -->
+  <label>label here</label><br>
+  <%= f.text_field :ATTR1 %><br><br>
+
+  <label>another label</label><br>
+  <%= f.text_area :ATTR2 %><br><br>
+
+  <%= f.submit @button_msg%>
+<% end %>
+
+<!-- form_for above, form_tag below -->
+
+<%= form_tag MODELS_path, method: :patch do %> <!-- method/verb defaults to POST -->
+  <label>label here</label><br>
+  <%= text_field_tag 'MODEL[ATTR1]', @MODEL.ATTR1 %><br>
+
+  <label>another label</label><br>
+  <%= text_area_tag 'MODEL[ATTR2]', @MODEL.ATTR2 %><br>
+
+  <%= submit_tag @button_msg %>
+<% end %>
+
+<!--__________________________________________________-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
