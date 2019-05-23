@@ -6,61 +6,67 @@ There is no need to reinvent the wheel.
 
 !!! localhost:3000/rails/info/routes !!!
 
-collection_select nil, :cohort_id, :id, Cohort.all, :id, :name
+params.permit(:id => []) permits a key with an array as a value
+
+before_action :set_MODEL, only: [:show, :edit, :update, :destroy]
+  before_action :set_blogger, except: [:index, :new, :create]
+
+collection_select :cohort_id, :id, Cohort.all, :id, :name
 
 after 'resources' => path: '/batches'
 root 'application#index'
 
+validates :age, {numericality: {greater_than: 0}}
 validates :attr1, :attr2, {presence: true, uniqueness: true}
 
 <!--_________________________ Index Template _________________________-->
 
-index => @model = Author.new
-
+<% @model = Author.new %> <!-- this can also be declared in the controller -->
 <% @link_attr = 'name' %>
-<%= render 'layouts/index' %>
+<%= render ' !!!layouts/index' %>
 
 <!-- original view file above, _form file below -->
 
 <h1>All <%= @model.class.to_s.pluralize %></h1>
 
+<% class_name = @model.class.to_s.downcase %>
 <h3>
 <% @model.class.all.each do |obj| %>
-  <%= link_to obj.send(@link_attr), send(@model.class.to_s.downcase+"_path", obj) %><br>
+  <%= link_to obj.send(@link_attr), send([class_name, '_path'].join, obj) %><br>
 <% end %>
 </h3>
 
-<%= link_to "Add new #{@model.class.to_s.downcase}", send("new_#{@model.class.to_s.downcase}_path") %><br>
+<%= link_to 'Add new ' << class_name, send(['new_' << class_name, '_path'].join) %><br>
 <%= link_to 'Home', '/' %>
 
 <!--_________________________ Show Template VERSION 2 _________________________
 *** shows ONLY the attributes you specify -->
 
-show => @model = @author
-
-<% @header_attr = 'name' %>
+<% @model = @author %> <!-- this can also be declared in the controller -->
+<% @header_msg = 'Showing Model: ' << @model.name %>
 <% @attr_array = [:attr1, :atrr2] %>
-<%= render 'layouts/show' %>
+<%= render ' !!!layouts/show' %>
 
 <!-- original view file above, _form file below -->
 
-<h1><%= @model.send(@header_attr) %></h1>
+<h1><%= @header_msg %></h1>
 
 <h3>
 <% @attr_array.each do |attr| %>
-  <%= "#{attr} - #{@model.send(attr)}" %><br>
+  <%= [attr, ' - ', @model.send(attr)].join %><br>
 <% end %>
 </h3><br>
 
-<%= link_to 'Update', send("edit_#{@model.class.to_s.downcase}_path")%><br>
-<%= link_to 'Delete', send(@model.class.to_s.downcase+"_path", @model), method: :delete %><br>
-<%= link_to 'Back',   send(@model.class.to_s.downcase.pluralize+"_path") %>
+<%  class_name = @model.class.to_s.downcase %>
+<%= link_to 'Edit', send(['edit_' << class_name, '_path'].join) %><br>
+<%= link_to 'Delete', send([class_name, '_path'].join, @model), method: :delete %><br>
+<%= link_to 'Back',   send(class_name.pluralize << '_path') %>
 
 <!--_________________________ Show Template VERSION 1 _________________________
 *** shows EVERY attribute -->
 
-<% @header_attr = 'name' %>
-<%= render 'layouts/show' %>
+<% @header_msg = 'Showing Model: ' << @model.name %>
+<%= render ' !!!layouts/show' %>
 
 <!-- original view file above, _form file below -->
 
@@ -68,7 +74,7 @@ show => @model = @author
 
 <h3>
 <% @model.attributes.each do |attr, value| %>
-  <%= "#{attr} - #{value}" %><br>
+  <%= [attr, ' - ', value].join %><br>
 <% end %>
 </h3><br>
 
@@ -85,7 +91,7 @@ edit   => @model = @author
 <% @header_msg = 'MODEL Form' %>
 <% @button_msg = 'submit button' %>
 <% @attr_hash = {name: 'text_field', genre: 'text_field', bio: 'text_area'} %>
-<%= render 'layouts/form' %>
+<%= render ' !!!layouts/form' %>
 
 <!-- original view file above, _form file below -->
 
@@ -99,7 +105,7 @@ edit   => @model = @author
 
 <%= form_for(@model) do |f| %>
   <% @attr_hash.each do |attr, method| %>
-    <%= attr %><br><%= f.send(method, :"#{attr}") %><br><br>
+    <%= attr %><br><%= f.send(method, attr) %><br><br>
   <% end %><br>
 
   <%= f.submit @button_msg%>
@@ -110,7 +116,7 @@ edit   => @model = @author
 
 <% @header_msg = 'MODEL form' %>
 <% @button_msg = 'submit button' %>
-<%= render 'layouts/form' %>
+<%= render ' !!!layouts/form' %>
 
 <!-- original view file above, _form file below -->
 
@@ -131,18 +137,17 @@ edit   => @model = @author
 
 <% @header_msg = 'MODEL form' %>
 <% @button_msg = 'submit button' %>
-<%= render 'form' %>
+<%= render ' !!!form' %>
 
 <!-- original view file above, _form file below -->
 
 <!-- header and error display goes here -->
 
 <%= form_for(@MODEL) do |f| %> <!-- method/verb is interpreted by Rails magic -->
-  <label>label here</label><br>
-  <%= f.text_field :ATTR1 %><br><br>
 
-  <label>another label</label><br>
-  <%= f.text_area :ATTR2 %><br><br>
+  label here<br><%= f.text_field :ATTR1 %><br><br>
+
+  label here<br><%= f.text_area :ATTR2 %><br><br>
 
   <%= f.submit @button_msg%>
 <% end %>
@@ -150,11 +155,10 @@ edit   => @model = @author
 <!-- form_for above, form_tag below -->
 
 <%= form_tag MODELS_path, method: :patch do %> <!-- method/verb defaults to POST -->
-  <label>label here</label><br>
-  <%= text_field_tag 'MODEL[ATTR1]', @MODEL.ATTR1 %><br>
+  
+  label here<br><%= text_field_tag 'MODEL[ATTR1]', @MODEL.ATTR1 %><br>
 
-  <label>another label</label><br>
-  <%= text_area_tag 'MODEL[ATTR2]', @MODEL.ATTR2 %><br>
+  label here<br><%= text_area_tag 'MODEL[ATTR2]', @MODEL.ATTR2 %><br>
 
   <%= submit_tag @button_msg %>
 <% end %>
